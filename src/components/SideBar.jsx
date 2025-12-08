@@ -1,6 +1,6 @@
 // src/components/Sidebar.jsx
 import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUniversity,
@@ -11,6 +11,9 @@ import {
   faCalendar,
   faFolder,
   faLayerGroup,
+  faBook,
+  faCheck,
+  faListCheck, // <-- checklist icon for Tasks
 } from "@fortawesome/free-solid-svg-icons";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
@@ -18,15 +21,15 @@ import { auth } from "../firebase";
 // --- STATIC DATA ---
 const folderOptions = [
   { key: "School", label: "School", icon: faUniversity },
-  { key: "Work", label: "Work", icon: faBriefcase },
+  { key: "Work", label: "Work", icon: faBriefcase }, // Work stays briefcase
   { key: "Personal", label: "Personal", icon: faUser },
-  { key: "All", label: "All", icon: faLayerGroup },
+  { key: "All", label: "All", icon: faCheck }, // All -> check icon
 ];
 
 const mainNavLinks = [
-  { path: "/tasks", label: "Tasks", icon: faBriefcase },
+  { path: "/tasks", label: "Tasks", icon: faListCheck }, // Tasks -> checklist icon
   { path: "/calendar", label: "Calendar", icon: faCalendar },
-  { path: "/projects", label: "Projects", icon: faFolder },
+  { path: "/projects", label: "Projects", icon: faFolder }, // Projects stays folder
 ];
 
 export default function Sidebar({
@@ -37,14 +40,16 @@ export default function Sidebar({
   setIsDropdownOpen,
 }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const [notesOpen, setNotesOpen] = useState(true);
 
   const profileEmail = user?.email || "test@example.com";
   const profileName = user?.displayName || "Drew Miguel";
-  const profileInitials = profileName
-    .split(" ")
-    .map((n) => n[0])
-    .join("") || "N";
+  const profileInitials =
+    profileName
+      .split(" ")
+      .map((n) => n[0])
+      .join("") || "N";
 
   return (
     <aside className="notes-sidebar">
@@ -64,7 +69,7 @@ export default function Sidebar({
           onClick={() => setNotesOpen((prev) => !prev)}
         >
           <div className="dropdown-label">
-            <FontAwesomeIcon icon={faFolder} />
+            <FontAwesomeIcon icon={faBook} /> {/* Notes -> notebook icon */}
             <span>Notes</span>
           </div>
           <FontAwesomeIcon
@@ -80,7 +85,10 @@ export default function Sidebar({
                 className={`folder-chip ${
                   activeFolder === folder.key ? "active" : ""
                 }`}
-                onClick={() => setActiveFolder(folder.key)}
+                onClick={() => {
+                  setActiveFolder(folder.key);
+                  navigate("/notes"); // always go back to Notes page
+                }}
               >
                 <FontAwesomeIcon icon={folder.icon} />
                 <span>{folder.label}</span>
@@ -90,8 +98,8 @@ export default function Sidebar({
         )}
       </div>
 
-      {/* --- Main App Navigation Links AS DROPDOWN --- */}
-      <div className="sidebar-section">
+      {/* --- Workspace Nav --- */}
+      <div className="sidebar-section workspace-section">
         <button
           className="sidebar-dropdown"
           onClick={() => setIsDropdownOpen((prev) => !prev)}
